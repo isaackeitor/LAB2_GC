@@ -91,9 +91,6 @@ void update_game_state() {
 }
 
 void render(SDL_Renderer* renderer) {
-    // Clear the framebuffer
-    clear();
-
     // Draw the game state
     for (int y = 0; y < FRAMEBUFFER_HEIGHT; y++) {
         for (int x = 0; x < FRAMEBUFFER_WIDTH; x++) {
@@ -111,10 +108,10 @@ void render(SDL_Renderer* renderer) {
 }
 
 void init_glider(int x, int y) {
-    std::vector<bool> row1 = {false, true, false};
-    std::vector<bool> row2 = {false, false, true};
-    std::vector<bool> row3 = {true, true, true};
-    std::vector<std::vector<bool> > glider_pattern = {row1, row2, row3};
+    std::vector<std::vector<bool> > glider_pattern(3, std::vector<bool>(3, false));
+    glider_pattern[1][0] = true;
+    glider_pattern[2][1] = true;
+    glider_pattern[0][2] = glider_pattern[1][2] = glider_pattern[2][2] = true;
 
     for (int dy = 0; dy < 3; dy++) {
         for (int dx = 0; dx < 3; dx++) {
@@ -184,12 +181,9 @@ void init_pulsar(int x, int y) {
 }
 
 void init_middleweight_spaceship(int x, int y) {
-    std::vector<bool> row1 = {false, true, false, false, true, false};
-    std::vector<bool> row2 = {true, false, false, false, false, true};
-    std::vector<bool> row3 = {true, false, false, false, false, true};
-    std::vector<bool> row4 = {true, true, false, false, true, true};
-    std::vector<bool> row5 = {false, false, true, true, true, true};
-    std::vector<std::vector<bool> > mws_pattern = {row1, row2, row3, row4, row5};
+    std::vector<std::vector<bool> > mws_pattern(5, std::vector<bool>(6, false));
+    mws_pattern[0][1] = mws_pattern[0][4] = mws_pattern[1][0] = mws_pattern[1][5] = mws_pattern[2][5] = true;
+    mws_pattern[3][0] = mws_pattern[3][5] = mws_pattern[4][2] = mws_pattern[4][3] = mws_pattern[4][4] = mws_pattern[4][5] = true;
 
     for (int dy = 0; dy < 5; dy++) {
         for (int dx = 0; dx < 6; dx++) {
@@ -242,10 +236,30 @@ void init_ship(int x, int y) {
     }
 }
 
+void init_gosper_glider_gun(int x, int y) {
+    std::vector<std::vector<bool> > gosper_glider_gun_pattern(9, std::vector<bool>(36, false));
+
+    // Assign the values for the Gosper Glider Gun pattern
+    gosper_glider_gun_pattern[1][5] = gosper_glider_gun_pattern[1][6] = true;
+    gosper_glider_gun_pattern[2][5] = gosper_glider_gun_pattern[2][6] = true;
+    gosper_glider_gun_pattern[3][3] = gosper_glider_gun_pattern[3][4] = true;
+    gosper_glider_gun_pattern[4][2] = gosper_glider_gun_pattern[4][8] = true;
+    gosper_glider_gun_pattern[5][1] = gosper_glider_gun_pattern[5][2] = gosper_glider_gun_pattern[5][7] = gosper_glider_gun_pattern[5][8] = gosper_glider_gun_pattern[5][9] = true;
+    gosper_glider_gun_pattern[6][2] = gosper_glider_gun_pattern[6][8] = true;
+    gosper_glider_gun_pattern[7][3] = gosper_glider_gun_pattern[7][4] = true;
+    gosper_glider_gun_pattern[8][5] = gosper_glider_gun_pattern[8][6] = true;
+
+    for (int dy = 0; dy < gosper_glider_gun_pattern.size(); dy++) {
+        for (int dx = 0; dx < gosper_glider_gun_pattern[dy].size(); dx++) {
+            game_state[(x + dx) % FRAMEBUFFER_WIDTH][(y + dy) % FRAMEBUFFER_HEIGHT] = gosper_glider_gun_pattern[dy][dx];
+        }
+    }
+}
+
 int main() {
     SDL_Init(SDL_INIT_EVERYTHING);
 
-    SDL_Window* window = SDL_CreateWindow("life", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    SDL_Window* window = SDL_CreateWindow("Conway’s Game Of Life", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
 
     SDL_Renderer* renderer = SDL_CreateRenderer(
         window,
@@ -256,32 +270,106 @@ int main() {
     bool running = true;
     SDL_Event event;
 
-    init_glider(10, 10);
-    init_block(30, 30);
-    init_blinker(50, 50);
-    init_toad(70, 70);
-    init_tub(10, 40);
-    init_pulsar(30, 60);
-    init_middleweight_spaceship(50, 80);
-    // init_beacon(70, 10);
-
-    while (running) {
-    while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT) {
-            running = false;
+    // Initialize multiple patterns at different locations
+    for (int i = 0; i < FRAMEBUFFER_WIDTH; i += 10) {
+        for (int j = 0; j < FRAMEBUFFER_HEIGHT; j += 10) {
+            int pattern = rand() % 10;
+            switch (pattern) {
+                case 0:
+                    init_glider(i, j);
+                    break;
+                case 1:
+                    init_block(i, j);
+                    break;
+                case 2:
+                    init_blinker(i, j);
+                    break;
+                case 3:
+                    init_toad(i, j);
+                    break;
+                case 4:
+                    init_tub(i, j);
+                    break;
+                case 5:
+                    init_pulsar(i, j);
+                    break;
+                case 6:
+                    init_beacon(i, j);
+                    break;
+                case 7:
+                    init_loaf(i, j);
+                    break;
+                case 8:
+                    init_boat(i, j);
+                    break;
+                case 9:
+                    init_ship(i, j);
+                    break;
+            }
         }
     }
 
-    // Call our render function
-    render(renderer);
+    int frame_count = 0;
 
-    // Present the frame buffer to the screen
-    SDL_RenderPresent(renderer);
+    while (running) {
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                running = false;
+            }
+        }
+        
+        clear();
 
-    // Delay to limit the frame rate
-    SDL_Delay(1000 / 60);
+        // Every 100 frames, reintroduce a random pattern at a random location
+        if (frame_count % 100 == 0) {
+            int x = rand() % FRAMEBUFFER_WIDTH;
+            int y = rand() % FRAMEBUFFER_HEIGHT;
+            int pattern = rand() % 10;
+            switch (pattern) {
+                case 0:
+                    init_glider(x, y);
+                    break;
+                case 1:
+                    init_block(x, y);
+                    break;
+                case 2:
+                    init_blinker(x, y);
+                    break;
+                case 3:
+                    init_toad(x, y);
+                    break;
+                case 4:
+                    init_tub(x, y);
+                    break;
+                case 5:
+                    init_pulsar(x, y);
+                    break;
+                case 6:
+                    init_beacon(x, y);
+                    break;
+                case 7:
+                    init_loaf(x, y);
+                    break;
+                case 8:
+                    init_boat(x, y);
+                    break;
+                case 9:
+                    init_ship(x, y);
+                    break;
+            }
+        }
+
+        // Call our render function
+        render(renderer);
+
+        // Present the frame buffer to the screen
+        SDL_RenderPresent(renderer);
+
+        // Delay to limit the frame rate
+        SDL_Delay(1000 / 60);
+
+        frame_count++;
     }
-
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
