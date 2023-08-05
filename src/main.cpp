@@ -20,10 +20,10 @@ struct Color {
 Color framebuffer[FRAMEBUFFER_SIZE];
 
 // Declare a global clearColor of type Color
-Color clearColor = {0, 0, 0, 255}; // Initially set to black
+Color clearColor = {0,173,255,47}; // Initially set to black
 
 // Declare a global currentColor of type Color
-Color currentColor = {255, 255, 255, 255}; // Initially set to white
+Color currentColor = {173,255,47,0}; // Initially set to white
 
 // Declare a global game state
 std::vector<std::vector<bool> > game_state(FRAMEBUFFER_WIDTH, std::vector<bool>(FRAMEBUFFER_HEIGHT, false));
